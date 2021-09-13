@@ -1,4 +1,4 @@
-# [HiPC-Programming-Contest-2021](https://hipc.org/programming/)
+# [HiPC Programming Contest 2021](https://hipc.org/programming/)
 ### Track B: Nvidia GPU Architecture
 GPU track will consist of a high-end node with an NVidia GPU
 <hr>
