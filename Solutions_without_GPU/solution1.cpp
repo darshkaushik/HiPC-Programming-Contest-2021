@@ -1,22 +1,25 @@
 // Finding number of K-Cliques in an undirected graph
 
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <set>
+#include <map>
 using namespace std;
 
-const int N=1e5;
+const int N = 1e6;
 
-set<int> v[N]; // It will store graph similar to adjacency list but instead of list, set has been used. 
-int n,k,cnt;
+vector<set<int>> v; // It will store graph similar to adjacency list but instead of list, set has been used.
+int n,m,k,cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
 void find(int i, set<int> s)
 {
     if(n-i+1<s.size()) return;
-    if(i==k) 
-    { 
-        cnt+=s.size(); 
-        return; 
-    } 
+    if(i==k)
+    {
+        cnt+=s.size();
+        return;
+    }
 
     for(auto x:s)
     {
@@ -32,20 +35,37 @@ void find(int i, set<int> s)
 
 int main()
 {
-    cin>>n>>k;
-    int m;
-    cin>>m;
+    #ifndef ONLINE_JUDGE
+    freopen("input.txt", "r", stdin);
+    freopen("output.txt", "w", stdout);
+    #endif
 
-    vector<int> d(N,0); // d[i] will tell degree of node i.
+    // first line of input should contain number of edges m and size of clique k
+    cin >> m >> k;
 
+    n = 0;
+    map<pair<int,int>,int> mp;
     for(int i=0; i<m; i++)
     {
-        int x,y; 
+        int x,y;
         cin>>x>>y;
-        
+        if(x > y) swap(x,y);
+        if(x!=y) mp[{x,y}] = 1;
+        n = max(n, max(x,y));
+    }
+    n++;
+    m = mp.size();
+
+    // cout << n << " " << m << endl;
+    
+    vector<int> d(n,0); // d[i] will tell degree of node i.
+    v.resize(n);
+    for(auto [p,c]: mp)
+    {
+        int x = p.first, y = p.second;
         if(v[x].find(y)==v[x].end() && v[y].find(x)==v[y].end())
         {
-            d[x]++; 
+            d[x]++;
             d[y]++;
         }
 
@@ -54,9 +74,9 @@ int main()
     }
 
     set<int> imp; // Only those nodes will form k-clique that have degree >= k-1.
-    for(int i=1; i<=n; i++)
+    for(int i=0; i<=n; i++)
     {
-        if(d[i]>=k-1) 
+        if(d[i]>=k-1)
             imp.insert(i);
     }
     
@@ -65,3 +85,4 @@ int main()
 
     cout<<cnt<<endl;
 }
+
