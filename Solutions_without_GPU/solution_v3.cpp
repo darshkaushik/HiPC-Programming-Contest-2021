@@ -1,36 +1,38 @@
 // Finding number of K-Cliques in an undirected graph
+// Solution without using set but binary_search is used.
 
 #include <iostream>
 #include <vector>
-#include <set>
+#include <algorithm>
 #include <map>
 #include <chrono>
 using namespace std;
 using namespace std::chrono;
 
 // It will store graph similar to adjacency list but instead of list, set has been used.
-vector<set<int>> v; 
+vector<vector<int>> v; 
 int n,m,k,cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
-void find(int i, set<int> s)
+void find(int i, vector<int> options)
 {
-    if(k-i+1 > s.size()) return;
+    if(k-i+1 > options.size()) return;
     if(i==k)
     {
-        cnt+=s.size();
+        cnt += options.size();
         return;
     }
 
-    for(auto x:s)
+    for(auto x: options)
     {
-        set<int> s1;
-        for(auto nd:v[x])
+        // Finding intersection of options and v[x]
+        vector<int> intersec;
+        for(auto nd: v[x])
         {
-            if(s.find(nd)!=s.end())
-                s1.insert(nd);
+            if(binary_search(options.begin(), options.end(), nd))
+                intersec.push_back(nd);
         }
-        find(i+1,s1);
+        find(i+1,intersec);
     }
 }
 
@@ -51,9 +53,10 @@ int main()
     {
         int x,y;
         cin >> x >> y;
+        // x must smaller than y
         if(x > y) swap(x,y);
         if(x != y) mp[{x,y}] = 1;
-        n = max(n, max(x,y));
+        n = max(n, y);
     }
     n++;
     m = mp.size();
@@ -71,22 +74,18 @@ int main()
     {
         pair<int,int> p = it.first;
         int x = p.first, y = p.second;
-        if(v[x].find(y)==v[x].end() && v[y].find(x)==v[y].end())
-        {
-            d[x]++;
-            d[y]++;
-        }
-
-        if(x<y) v[x].insert(y);
-        else v[y].insert(x);
+        d[x]++;
+        d[y]++;
+        // x is smaller than y
+        v[x].push_back(y);
     }
 
     // Only those nodes will form k-clique that have degree >= k-1.
-    set<int> imp; 
+    vector<int> imp; 
     for(int i=0; i<=n; i++)
     {
         if(d[i]>=k-1)
-            imp.insert(i);
+            imp.push_back(i);
     }
     
     cnt=0;
@@ -95,7 +94,7 @@ int main()
     // End Time
     auto end_time = high_resolution_clock::now();
 
-    // Calculating time duration
+    // Calculating time duration.
     auto duration = duration_cast<microseconds>(end_time - start_time);
     long double time_us = duration.count();
     long double time_ms = (long double) duration.count() / 1000;

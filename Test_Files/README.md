@@ -28,7 +28,7 @@ Small Input - Description
 - 012 - same as 010 but k = 7
 
 
-Large Input - Time Taken 
-- 101 - 2.7 s
+Large Input - Time Taken
+- 101 - 1.2 s
 - 102 - created using generator, type = 3, k = 4
 - 103 - same as 102, k = 5 
