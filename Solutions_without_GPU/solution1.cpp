@@ -4,6 +4,8 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <string>
+
 using namespace std;
 
 const int N = 1e6;
@@ -23,13 +25,9 @@ void find(int i, set<int> s)
 
     for(auto x:s)
     {
-        set<int> s1;
-        for(auto nd:v[x])
-        {
-            if(s.find(nd)!=s.end())
-                s1.insert(nd);
-        }
-        find(i+1,s1);
+        set<int> intersect;
+        std::set_intersection(v[x].begin(), v[x].end(), s.begin(), s.end(), inserter(intersect, intersect.begin()));
+        find(i+1,intersect);
     }
 }
 
