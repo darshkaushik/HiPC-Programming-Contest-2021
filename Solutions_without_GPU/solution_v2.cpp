@@ -1,4 +1,5 @@
 // Finding number of K-Cliques in an undirected graph
+// used set_intersection inside find function 
 
 #include <iostream>
 #include <vector>
@@ -10,7 +11,8 @@ using namespace std;
 
 const int N = 1e6;
 
-vector<set<int>> v; // It will store graph similar to adjacency list but instead of list, set has been used.
+// It will store graph similar to adjacency list but instead of list, set has been used.
+vector<set<int>> v; 
 int n,m,k,cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
@@ -26,7 +28,7 @@ void find(int i, set<int> s)
     for(auto x:s)
     {
         set<int> intersect;
-        std::set_intersection(v[x].begin(), v[x].end(), s.begin(), s.end(), inserter(intersect, intersect.begin()));
+        set_intersection(v[x].begin(), v[x].end(), s.begin(), s.end(), inserter(intersect, intersect.begin()));
         find(i+1,intersect);
     }
 }
@@ -38,7 +40,7 @@ int main()
     freopen("output.txt", "w", stdout);
     #endif
 
-    // first line of input should contain number of edges m and size of clique k
+    // First line of input should contain number of edges m and size of clique k.
     cin >> m >> k;
 
     n = 0;
@@ -55,6 +57,7 @@ int main()
     n++;
     m = mp.size();
 
+    // Print this to know no. of nodes and unique edges.
     // cout << n << " " << m << endl;
     
     // d[i] will tell degree of node i.
