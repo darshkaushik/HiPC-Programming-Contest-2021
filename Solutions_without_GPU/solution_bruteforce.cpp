@@ -1,4 +1,5 @@
 // Finding number of K-Cliques in an undirected graph
+// Brute Force, don't run it for graph with for nodes > 20 as it will run very slow
 
 #include <iostream>
 #include <vector>
@@ -13,24 +14,37 @@ vector<set<int>> v;
 int n,m,k,cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
-void find(int i, set<int> s)
+void find(set<int> &s)
 {
-    if(k-i+1 > s.size()) return;
-    if(i==k)
+    if(s.size()==k)
     {
-        cnt+=s.size();
+        int is_clique = 1;
+        for(auto x1: s)
+        {
+            for(auto x2: s)
+            {
+                if(x1 == x2) continue;
+                if(v[x1].find(x2) == v[x1].end())
+                {
+                    is_clique = 0;
+                    break;
+                }
+            }
+            if(!is_clique) break;
+        }
+        if(is_clique) cnt++;
         return;
     }
 
-    for(auto x:s)
+    int x;
+    if(s.empty()) x = 0;
+    else x = *s.rbegin();
+
+    for(int nd = x+1; nd <=n; nd++)
     {
-        set<int> s1;
-        for(auto nd:v[x])
-        {
-            if(s.find(nd)!=s.end())
-                s1.insert(nd);
-        }
-        find(i+1,s1);
+        s.insert(nd);
+        find(s);
+        s.erase(nd);
     }
 }
 
@@ -64,38 +78,21 @@ int main()
     // Start Time
     auto start_time = high_resolution_clock::now();
 
-    // d[i] will tell degree of node i.
-    vector<int> d(n,0);
     v.resize(n);
     for(auto it: mp)
     {
         pair<int,int> p = it.first;
         int x = p.first, y = p.second;
-        if(v[x].find(y)==v[x].end() && v[y].find(x)==v[y].end())
-        {
-            d[x]++;
-            d[y]++;
-        }
-
-        if(x<y) v[x].insert(y);
-        else v[y].insert(x);
-    }
-
-    // Only those nodes will form k-clique that have degree >= k-1.
-    set<int> imp; 
-    for(int i=0; i<=n; i++)
-    {
-        if(d[i]>=k-1)
-            imp.insert(i);
+        v[x].insert(y);
+        v[y].insert(x);
     }
     
-    cnt=0;
-    find(1,imp);
+    cnt = 0;
+    set<int> s;
+    find(s);
 
     // End Time
     auto end_time = high_resolution_clock::now();
-
-    // Calculating time duration.
     auto duration = duration_cast<microseconds>(end_time - start_time);
     long double time_us = duration.count();
     long double time_ms = (long double) duration.count() / 1000;

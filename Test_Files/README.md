@@ -1,7 +1,34 @@
 ### Input Format
-The first line of input file contain two numbers - number of nodes `n` of graph and `k` of K-Clique.
-The second line number of connections `m` in graph.
-Next `m` lines contains two integers `x` and `y` which have an edge.
+
+- The first line of input file contain two numbers - number of edges `m` and `k` of K-Clique.
+- Next `m` lines contains two integers `x` and `y` which have an edge.
+- There can be duplicate edges in the input.
+
+1. input0xx - small input (nodes <= 30)
+2. input10x - large input that take less time
+3. input20x - large input that take high time 
 
 ### Output Format
-Output file contains only one number i.e. the number of K-Cliques in the graph.
+- Output file contains the answer i.e. the number of K-Cliques in the graph.
+
+## ANALYSIS
+
+Small Input - Description
+- 001 - 
+- 002 - 
+- 003 - 5 clique, k = 5
+- 004 - 5 clique, k = 4
+- 005 - two disconnected 5 cliques, k = 5
+- 006 - two connected 5 cliques, k = 4
+- 007 - 10 clique, k = 6
+- 008 - incomplete 10 clique, k = 6
+- 009 - incomplete 10 clique, k = 4
+- 010 - created using generator, type = 3, k = 5
+- 011 - same as 010 but k = 6
+- 012 - same as 010 but k = 7
+
+
+Large Input - Time Taken 
+- 101 - 2.7 s
+- 102 - created using generator, type = 3, k = 4
+- 103 - same as 102, k = 5 
