@@ -44,7 +44,8 @@ int main()
     cin >> m >> k;
 
     n = 0;
-    map<pair<int,int>,int> mp;
+    // map to remove duplicate edges
+    map<pair<int,int>,int> mp; 
     for(int i=0; i<m; i++)
     {
         int x,y;
@@ -58,7 +59,8 @@ int main()
 
     // cout << n << " " << m << endl;
     
-    vector<int> d(n,0); // d[i] will tell degree of node i.
+    // d[i] will tell degree of node i.
+    vector<int> d(n,0);
     v.resize(n);
     for(auto [p,c]: mp)
     {
@@ -73,7 +75,8 @@ int main()
         else v[y].insert(x);
     }
 
-    set<int> imp; // Only those nodes will form k-clique that have degree >= k-1.
+    // Only those nodes will form k-clique that have degree >= k-1.
+    set<int> imp; 
     for(int i=0; i<=n; i++)
     {
         if(d[i]>=k-1)
