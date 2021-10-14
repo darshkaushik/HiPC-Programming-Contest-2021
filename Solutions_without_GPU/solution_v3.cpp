@@ -1,12 +1,11 @@
 // Finding number of K-Cliques in an undirected graph
+// Without using Set.
 
 #include <iostream>
 #include <vector>
 #include <set>
 #include <map>
-#include <chrono>
 using namespace std;
-using namespace std::chrono;
 
 // It will store graph similar to adjacency list but instead of list, set has been used.
 vector<set<int>> v; 
@@ -61,9 +60,6 @@ int main()
     // Print this to know no. of nodes and unique edges.
     // cout << n << " " << m << endl;
 
-    // Start Time
-    auto start_time = high_resolution_clock::now();
-
     // d[i] will tell degree of node i.
     vector<int> d(n,0);
     v.resize(n);
@@ -92,16 +88,6 @@ int main()
     cnt=0;
     find(1,imp);
 
-    // End Time
-    auto end_time = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(end_time - start_time);
-    long double time_us = duration.count();
-    long double time_ms = (long double) duration.count() / 1000;
-    long double time_s = (long double) duration.count() / 1000000;
-
-    cout << cnt << endl;
-    cout << "Time Taken -> " << endl;
-    cout << time_s << " seconds" << endl;
-    cout << time_ms << " milliseconds" << endl;
-    cout << time_us << " microseconds" << endl;  
+    cout<<cnt<<endl;
 }
+
