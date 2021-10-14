@@ -64,8 +64,9 @@ int main()
     // d[i] will tell degree of node i.
     vector<int> d(n,0);
     v.resize(n);
-    for(auto [p,c]: mp)
+    for(auto it: mp)
     {
+        pair<int,int> p = it.first;
         int x = p.first, y = p.second;
         if(v[x].find(y)==v[x].end() && v[y].find(x)==v[y].end())
         {
