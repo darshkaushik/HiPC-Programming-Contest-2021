@@ -2,7 +2,6 @@
 // Solution without using set and vector.
 
 #include <iostream>
-#include <vector>
 #include <cstring>
 #include <algorithm>
 #include <map>
@@ -11,7 +10,9 @@ using namespace std;
 using namespace std::chrono;
 
 // It will store graph like adjacency list.
-vector<vector<int>> v;
+const int N = 1e6;
+int* v[N];
+int v_size[N];
 int n,m,k,cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
@@ -30,7 +31,7 @@ void find(int i, int options[], int options_size)
         
         // Finding intersection of options and v[x]
         int intersec_size = 0;
-        for(int i2 = 0; i2 < v[x].size(); i2++)
+        for(int i2 = 0; i2 < v_size[x]; i2++)
         {
             int nd = v[x][i2];
             if(binary_search(options, options + options_size, nd))
@@ -39,7 +40,7 @@ void find(int i, int options[], int options_size)
         
         int intersec[intersec_size];
         memset(intersec, 0, sizeof(intersec));
-        for(int i2 = 0, j = 0; i2 < v[x].size(); i2++)
+        for(int i2 = 0, j = 0; i2 < v_size[x]; i2++)
         {
             int nd = v[x][i2];
             if(binary_search(options, options + options_size, nd))
@@ -102,7 +103,6 @@ int main()
     // d[i] will tell degree of node i.
     int d[n];
     memset(d, 0, sizeof(d));
-    v.resize(n);
     for(auto it: mp)
     {
         pair<int,int> p = it.first;
@@ -110,8 +110,26 @@ int main()
         d[x]++;
         d[y]++;
         // x is smaller than y
-        v[x].push_back(y);
+        v_size[x]++;
     }
+
+    // Finding adjacency list v[] of graph
+    for(int i = 0; i < n; i++)
+        v[i] = (int*)malloc(v_size[i] * sizeof(int));
+
+    int v_i[n];
+    memset(v_i, 0, sizeof(v_i));
+    for(auto it: mp)
+    {
+        pair<int,int> p = it.first;
+        int x = p.first, y = p.second;
+        d[x]++;
+        d[y]++;
+        // x is smaller than y
+        v[x][v_i[x]] = y;
+        v_i[x]++;
+    }
+
 
     // Only those nodes will form k-clique that have degree >= k-1.
     int imp_size = 0;
