@@ -10,7 +10,7 @@ using namespace std;
 using namespace std::chrono;
 
 // It will store graph like adjacency list.
-const int N = 1e6;
+const int N = 1e8;
 int* v[N];
 int v_size[N];
 int n,m,k,cnt;
