@@ -1,8 +1,9 @@
 // Finding number of K-Cliques in an undirected graph
-// same as v3 but time is calculated differently
+// Solution without using set and vector.
 
 #include <iostream>
 #include <vector>
+#include <cstring>
 #include <algorithm>
 #include <map>
 #include <chrono>
@@ -14,25 +15,42 @@ vector<vector<int>> v;
 int n,m,k,cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
-void find(int i, vector<int> options)
+void find(int i, int options[], int options_size)
 {
-    if(k-i+1 > options.size()) return;
-    if(i==k)
+    if(k-i+1 > options_size) return;
+    if(i == k)
     {
-        cnt += options.size();
+        cnt += options_size;
         return;
     }
 
-    for(auto x: options)
+    for(int i1 = 0; i1 < options_size; i1++)
     {
+        int x = options[i1];
+        
         // Finding intersection of options and v[x]
-        vector<int> intersec;
-        for(auto nd: v[x])
+        int intersec_size = 0;
+        for(int i2 = 0; i2 < v[x].size(); i2++)
         {
-            if(binary_search(options.begin(), options.end(), nd))
-                intersec.push_back(nd);
+            int nd = v[x][i2];
+            if(binary_search(options, options + options_size, nd))
+                intersec_size++;
         }
-        find(i+1,intersec);
+        
+        int intersec[intersec_size];
+        memset(intersec, 0, sizeof(intersec));
+        for(int i2 = 0, j = 0; i2 < v[x].size(); i2++)
+        {
+            int nd = v[x][i2];
+            if(binary_search(options, options + options_size, nd))
+            {
+                intersec[j] = nd;
+                j++;
+            }
+        }
+
+        // Recursion
+        find(i+1, intersec, intersec_size);
     }
 }
 
@@ -48,12 +66,29 @@ int main()
     // First line of input should contain number of edges m and size of clique k.
     cin >> m >> k;
 
-    vector<pair<int,int>> edges;
-    for(int i = 0; i < m; i++)
+    n = 0;
+    // map to remove duplicate edges
+    map<pair<int,int>,int> mp; 
+    for(int i=0; i<m; i++)
     {
-        int x, y;
+        int x,y;
         cin >> x >> y;
-        edges.push_back({x, y});
+        // x must smaller than y
+        if(x > y) swap(x,y);
+        if(x != y) mp[{x,y}] = 1;
+        n = max(n, y);
+    }
+    n++;
+    m = mp.size();
+
+    // Storing unique edges in e1[i] - e2[i] 
+    int e1[m], e2[m];
+    int i = 0;
+    for(auto x: mp)
+    {
+        e1[i] = x.first.first;
+        e2[i] = x.first.second;
+        i++;
     }
 //--------------------------- INPUT Ends -------------------------------> 
 
@@ -61,26 +96,12 @@ int main()
     // Start Time
     auto start_time = high_resolution_clock::now();
 
-    n = 0;
-    // map to remove duplicate edges
-    map<pair<int,int>,int> mp; 
-    for(int i = 0; i < m; i++)
-    {
-        int x = edges[i].first; 
-        int y = edges[i].second;
-        // x must be smaller than y
-        if(x > y) swap(x, y);
-        if(x != y) mp[{x, y}] = 1;
-        n = max(n, y);
-    }
-    n++;
-    m = mp.size();
-
     // Print this to know the number of nodes and unique edges.
     // cout << n << " " << m << endl;
 
     // d[i] will tell degree of node i.
-    vector<int> d(n, 0);
+    int d[n];
+    memset(d, 0, sizeof(d));
     v.resize(n);
     for(auto it: mp)
     {
@@ -93,15 +114,26 @@ int main()
     }
 
     // Only those nodes will form k-clique that have degree >= k-1.
-    vector<int> imp; 
+    int imp_size = 0;
     for(int i = 0; i < n; i++)
     {
         if(d[i] >= k - 1)
-            imp.push_back(i);
+            imp_size++;
+    }
+
+    int imp[imp_size];
+    memset(imp, 0, sizeof(imp)); 
+    for(int i = 0, j = 0; i < n; i++)
+    {
+        if(d[i] >= k - 1)
+        {
+            imp[j] = i;
+            j++;
+        }
     }
     
     cnt=0;
-    find(1, imp);
+    find(1, imp, imp_size);
 
     // End Time
     auto end_time = high_resolution_clock::now();
