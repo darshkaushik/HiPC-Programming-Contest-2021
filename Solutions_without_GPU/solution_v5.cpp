@@ -101,6 +101,7 @@ int main()
     // cout << n << " " << m << endl;
 
     // d[i] will tell degree of node i.
+    // Finding d[i] and v_size[i]
     int d[n];
     memset(d, 0, sizeof(d));
     for(auto it: mp)
@@ -123,8 +124,6 @@ int main()
     {
         pair<int,int> p = it.first;
         int x = p.first, y = p.second;
-        d[x]++;
-        d[y]++;
         // x is smaller than y
         v[x][v_i[x]] = y;
         v_i[x]++;
