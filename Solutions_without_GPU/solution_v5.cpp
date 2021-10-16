@@ -1,3 +1,4 @@
+// v5
 // Finding number of K-Cliques in an undirected graph
 // Solution without using set and vector.
 
@@ -101,7 +102,6 @@ int main()
     // cout << n << " " << m << endl;
 
     // d[i] will tell degree of node i.
-    // Finding d[i] and v_size[i]
     int d[n];
     memset(d, 0, sizeof(d));
     for(auto it: mp)
@@ -128,7 +128,6 @@ int main()
         v[x][v_i[x]] = y;
         v_i[x]++;
     }
-
 
     // Only those nodes will form k-clique that have degree >= k-1.
     int imp_size = 0;

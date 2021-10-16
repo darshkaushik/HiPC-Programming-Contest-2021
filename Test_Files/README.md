@@ -28,7 +28,12 @@ Small Input - Description
 - 012 - same as 010 but k = 7
 
 
-Large Input - Time Taken
-- 101 - 1.2 s
-- 102 - created using generator, type = 3, k = 4
-- 103 - same as 102, k = 5 
+Large Input less time - Description - Time Taken
+- 101 - taken from example datasets - v5 0.72 s, v3 0.95 s
+- 102 - created using generator, type = 3, k = 4,  - v5 0.4 s, v3 0.73 s
+- 103 - same as 102, k = 5  - v5 4.2 s, v3 8.4 s
+
+
+Large Input high time - 
+- 201
+- 202 - same as 102, k = 6 - v5 33 s, v3 95 s
