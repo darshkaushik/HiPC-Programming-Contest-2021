@@ -181,8 +181,8 @@ int main()
     {
         pair<int,int> p = it.first;
         int x = p.first, y = p.second;
-        d[x]++;
-        d[y]++;
+        // d[x]++;
+        // d[y]++;
         // x is smaller than y
         v[x][v_i[x]] = y;
         v_i[x]++;
