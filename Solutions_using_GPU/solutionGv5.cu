@@ -1,6 +1,3 @@
-#/@title
-
-%%cu
 // Finding number of K-Cliques in an undirected graph
 // Only parallelizing v5 for degree and v_size
 
@@ -177,7 +174,7 @@ int main()
     //cout<< "kernel config "<<(m+deg_block_sz-1)/deg_block_sz << deg_block_sz<<endl;
     degree<<<(m+deg_block_sz-1)/deg_block_sz, deg_block_sz>>>(d_e1, d_e2, d_d, d_v_size, m);
     cudaCheckErrors("Kernel degree launch failure");
-    cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();
 
     int d[n];
     cudaMemcpy(d, d_d, n*sizeof(int), cudaMemcpyDeviceToHost);
@@ -197,8 +194,6 @@ int main()
     {
         pair<int,int> p = it.first;
         int x = p.first, y = p.second;
-        // d[x]++;
-        // d[y]++;
         // x is smaller than y
         v[x][v_i[x]] = y;
         v_i[x]++;
