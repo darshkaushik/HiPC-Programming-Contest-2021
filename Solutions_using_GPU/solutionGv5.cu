@@ -1,3 +1,6 @@
+#/@title
+
+%%cu
 // Finding number of K-Cliques in an undirected graph
 // Only parallelizing v5 for degree and v_size
 
@@ -70,15 +73,19 @@ void find(int i, int options[], int options_size)
 }
 
 // It will store the degree of each node 
-__global__ void degree(const int *e1, const int *e2, int *d, int *v_size, int m)
+__global__ void degree(int *e1, int *e2, int *d, int *v_size, int m)
 {
     int idx = threadIdx.x+blockDim.x*blockIdx.x;
     if (idx < m)
     {
+        //printf("index = %d\n",idx);
         int x = e1[idx], y = e2[idx];
         // x is smaller than y
-        atomicAdd(&d[x],1);
-        atomicAdd(&d[y],1);
+        //printf("index = %d\tx = %d\ty = %d\n", idx,x,y);
+     
+        int *dx = &d[x], *dy = &d[y];
+        atomicAdd(dx,1);
+        atomicAdd(dy,1);
         atomicAdd(&v_size[x],1);
     }
     
@@ -87,8 +94,8 @@ __global__ void degree(const int *e1, const int *e2, int *d, int *v_size, int m)
 int main()
 {
     #ifndef ONLINE_JUDGE
-    freopen("input101.txt", "r", stdin);
-    freopen("output101G1.txt", "w", stdout);
+    freopen("./Test_Files/input001.txt", "r", stdin);
+    freopen("output001Gv5.txt", "w", stdout);
     #endif
 
 //--------------------------- INPUT Starts -----------------------------> 
@@ -119,6 +126,11 @@ int main()
         e2[i] = x.first.second;
         i++;
     }
+ 
+    //for(i=0;i<m;i++)
+    //{
+    //    cout<<e1[i]<<" "<<e2[i]<<endl;
+    //}
 
     // edges in device
     int *d_e1, *d_e2;
@@ -126,10 +138,9 @@ int main()
     cudaMalloc(&d_e2, m*sizeof(int));
     cudaCheckErrors("cudaMalloc edges failure");
     cudaMemcpy(d_e1, e1, m*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_e2, e1, m*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_e2, e2, m*sizeof(int), cudaMemcpyHostToDevice);
     cudaCheckErrors("cudaMemcpy edges failure");
-
-    
+ 
 //--------------------------- INPUT Ends -------------------------------> 
 
 //------------------------ ALGORITHM Starts ----------------------------> 
@@ -163,14 +174,19 @@ int main()
     cudaCheckErrors("cudaMemset degree failure");
 
     int deg_block_sz = 256;
+    //cout<< "kernel config "<<(m+deg_block_sz-1)/deg_block_sz << deg_block_sz<<endl;
     degree<<<(m+deg_block_sz-1)/deg_block_sz, deg_block_sz>>>(d_e1, d_e2, d_d, d_v_size, m);
     cudaCheckErrors("Kernel degree launch failure");
-    
+    cudaDeviceSynchronize();
+
     int d[n];
     cudaMemcpy(d, d_d, n*sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(v_size, d_v_size, n*sizeof(int), cudaMemcpyDeviceToHost);
     cudaCheckErrors("cudaMemcpy degree failure");
     
+    //for(int i = 0; i < n; i++)
+    //    cout<<i<<" "<< d[i]<<endl;
+
     // Finding adjacency list v[] of graph
     for(int i = 0; i < n; i++)
         v[i] = (int*)malloc(v_size[i] * sizeof(int));
