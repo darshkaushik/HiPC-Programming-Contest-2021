@@ -4,7 +4,7 @@
 - Next `m` lines contains two integers `x` and `y` which have an edge.
 - There can be duplicate edges in the input.
 
-1. input0xx - small input (nodes <= 30)
+1. input0xx - small input (nodes <= 300)
 2. input10x - large input that take less time
 3. input20x - large input that take high time 
 

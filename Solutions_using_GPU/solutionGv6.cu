@@ -49,7 +49,7 @@ void find(int i, int options[], int options_size)
             if(binary_search(options, options + options_size, nd))
                 intersec_size++;
         }
-        
+
         int *intersec = (int*) malloc(intersec_size * sizeof(int));
         for(int i2 = 0, j = 0; i2 < v_size[x]; i2++)
         {
