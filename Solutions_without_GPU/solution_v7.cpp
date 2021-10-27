@@ -14,16 +14,6 @@ int **v;
 int *v_size;
 int n, m, k, cnt;
 
-void print_binary(long long int x)
-{
-    cout << x << endl;
-    for(int i = 0; i < n; i++) {
-        if((x & (1 << i)) != 0)
-            cout << i << " ";
-    }
-    cout << endl;
-}
-
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
 void find(int i, int options_bin, int options_size)
 {
