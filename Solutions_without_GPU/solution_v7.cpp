@@ -12,6 +12,7 @@ using namespace std::chrono;
 // It will store graph like adjacency list.
 int **v;
 int *v_size;
+int imp_size;
 int *imp, *pos;
 int n, m, k, cnt;
 
@@ -25,12 +26,14 @@ void find(int i, long long int options_bin, int options_size)
         return;
     }
 
-    for(int x = 0; x < n; x++)
+    for(int i1 = 0; i1 < imp_size; i1++)
     {
-        // If x is not present in imp array or if pos[x]-th bit is not set in options_bin
-        if(pos[x] == -1 || (options_bin & (1 << pos[x])) == 0) 
+        // If i-th bit is not set in options_bin
+        if((options_bin & (1 << i1)) == 0) 
             continue;
         
+        int x = imp[i1];
+
         // Finding intersection of options and v[x]
         long long int intersec_bin = 0;
         int intersec_size = 0;
@@ -127,7 +130,7 @@ int main()
     // Only those nodes will form k-clique that have degree >= k-1.
     // imp array stores nodes with degree >= k-1
     // pos[i] tells pos of node i in imp, pos[i] = -1 if node i not present in imp 
-    int imp_size = 0;
+    imp_size = 0;
     for(int i = 0; i < n; i++)
     {
         if(d[i] >= k - 1)
