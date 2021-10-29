@@ -3,7 +3,6 @@
 // same as v5 but used printf, scanf, malloc and calloc everywhere, not need to take N = 1e8 before hand 
 
 #include <iostream>
-#include <algorithm>
 #include <map>
 #include <chrono>
 using namespace std;
@@ -28,23 +27,33 @@ void find(int i, int* options, int options_size)
     {
         int x = options[i1];
         
-        // Finding intersection of options and v[x]
+        // Finding intersection of options[] and v[x][]
         int intersec_size = 0;
         for(int i2 = 0; i2 < v_size[x]; i2++)
         {
             int nd = v[x][i2];
-            if(binary_search(options, options + options_size, nd))
-                intersec_size++;
+            for(int i3 = 0; i3 < options_size; i3++)
+            {
+                if(options[i3] == nd)
+                {
+                    intersec_size++;
+                    break;
+                }
+            }
         }
         
         int *intersec = (int*) malloc(intersec_size * sizeof(int));
         for(int i2 = 0, j = 0; i2 < v_size[x]; i2++)
         {
             int nd = v[x][i2];
-            if(binary_search(options, options + options_size, nd))
+            for(int i3 = 0; i3 < options_size; i3++)
             {
-                intersec[j] = nd;
-                j++;
+                if(options[i3] == nd)
+                {
+                    intersec[j] = nd;
+                    j++;
+                    break;
+                }
             }
         }
 

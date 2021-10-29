@@ -1,6 +1,6 @@
 // v7
 // Finding number of K-Cliques in an undirected graph
-// Used binary representation instead of array for options, removed binary_search, rest same as v6
+// Used binary representation instead of array for options, rest same as v6
 // Only run on input with number of nodes having degree >= k - 1 is less than 60
 
 #include <iostream>
