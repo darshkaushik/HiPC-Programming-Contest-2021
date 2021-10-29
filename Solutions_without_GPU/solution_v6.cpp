@@ -15,7 +15,7 @@ int *v_size;
 int n, m, k, cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
-void find(int i, int options[], int options_size)
+void find(int i, int* options, int options_size)
 {
     if(k-i+1 > options_size) return;
     if(i == k)
