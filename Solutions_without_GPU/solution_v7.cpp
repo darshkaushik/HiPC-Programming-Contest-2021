@@ -1,7 +1,7 @@
 // v7
 // Finding number of K-Cliques in an undirected graph
-// used binary representation instead of array for options, removed binary_search, rest same as v6
-// only run on input with number of nodes n <= 60
+// Used binary representation instead of array for options, removed binary_search, rest same as v6
+// Only run on input with number of nodes having degree >= k - 1 is less than 60
 
 #include <iostream>
 #include <map>
@@ -12,10 +12,11 @@ using namespace std::chrono;
 // It will store graph like adjacency list.
 int **v;
 int *v_size;
+int *imp, *pos;
 int n, m, k, cnt;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
-void find(int i, int options_bin, int options_size)
+void find(int i, long long int options_bin, int options_size)
 {
     if(k - i + 1 > options_size) return;
     if(i == k)
@@ -26,8 +27,8 @@ void find(int i, int options_bin, int options_size)
 
     for(int x = 0; x < n; x++)
     {
-        // If x-th bit is not set in options_bin
-        if((options_bin & (1 << x)) == 0) 
+        // If x is not present in imp array or if pos[x]-th bit is not set in options_bin
+        if(pos[x] == -1 || (options_bin & (1 << pos[x])) == 0) 
             continue;
         
         // Finding intersection of options and v[x]
@@ -36,10 +37,10 @@ void find(int i, int options_bin, int options_size)
         for(int j = 0; j < v_size[x]; j++)
         {
             int nd = v[x][j];
-            // if nd-th bin of options_bin is set
-            if((options_bin & (1 << nd)) != 0)
+            // if nd is present in imp and pos[nd]-th bit of options_bin is set
+            if(pos[nd] != -1 && (options_bin & (1 << pos[nd])) != 0)
             {
-                intersec_bin += (1 << nd);
+                intersec_bin += (1 << pos[nd]);
                 intersec_size ++;
             }
         }
@@ -123,18 +124,29 @@ int main()
         v_i[x]++;
     }
 
-    // Only those nodes will form k-clique that have degree >= k-1
-    // i-th bit in imp_bin set if i-th node has degree >= k-1
-    // imp_size tells no. of 1's in imp
-    long long int imp_bin = 0;
+    // Only those nodes will form k-clique that have degree >= k-1.
+    // imp array stores nodes with degree >= k-1
+    // pos[i] tells pos of node i in imp, pos[i] = -1 if node i not present in imp 
     int imp_size = 0;
-    for(int i = 0; i < n; i++) 
+    for(int i = 0; i < n; i++)
     {
-        if(d[i] >= k - 1) 
-        {
-            imp_bin += (1 << i);
+        if(d[i] >= k - 1)
             imp_size++;
+    }
+
+    pos = (int*) malloc(n * sizeof(int));
+    imp = (int*) calloc(imp_size, sizeof(int));
+    long long int imp_bin = 0;
+    for(int i = 0, j = 0; i < n; i++)
+    {
+        if(d[i] >= k - 1)
+        {
+            imp[j] = i;
+            pos[i] = j;
+            imp_bin += (1 << j);
+            j++;
         }
+        else pos[i] = -1;
     }
 
     cnt=0;
