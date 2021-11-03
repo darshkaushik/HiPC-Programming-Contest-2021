@@ -209,12 +209,6 @@ int main()
     cudaCheckErrors("cudaMemcpy adjacency_matrix failure");
 
 
-    /*
-    I need imp, imp_size, k, i, cnt, v, v_size in gpu memory 
-    d_v_size and d_v are already in gpu memory
-    need to write code for imp, imp_size, k, i and cnt
-    */
-
     // Only those nodes will form k-clique that have degree >= k-1.
     int imp_size = 0;
     for(int i = 0; i < n; i++)
@@ -231,8 +225,12 @@ int main()
             j++;
         }
     }
-    // cnt=0;
-    // find(1, imp, imp_size);
+
+    /*
+    need imp, imp_size, k, i, cnt, v, v_size in gpu memory 
+    d_v_size and d_v are already in gpu memory
+    remaining imp, imp_size, k, i and cnt
+    */
 
     int cnt = 0;
     int *d_imp, *d_imp_size, *d_k, *d_i, *d_cnt;
