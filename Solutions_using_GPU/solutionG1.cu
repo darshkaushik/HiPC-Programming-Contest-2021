@@ -1,5 +1,5 @@
 // Finding number of K-Cliques in an undirected graph
-// Only parallelizing v6 for degree and adjacency matrix
+// Parallelized find function, but only 1 thread at a time <<<1,1>>>
 
 #include <iostream>
 #include <algorithm>
@@ -26,18 +26,17 @@ using namespace std::chrono;
 // It will store graph like adjacency list.
 int *v;
 int *v_size;
-int n, m, k, cnt;
+int n, m, k;
 
 // It will recurse and find all possible K-Cliques and increment cnt if a K-Clique is found.
-void find(int i, int options[], int options_size)
+__global__ void find(int i, int *options, int options_size, int k, int *v, int *v_size, int *cnt)
 {
-    //for(int i1 = 0; i1 < options_size; i1++)
-    //    cout<<options[i1]<<" ";
-    //cout<<endl;
-    if(k-i+1 > options_size) return;
+    i++;
+    if(k - i + 1 > options_size) return;
     if(i == k)
     {
-        cnt += options_size;
+        // (*cnt) += (*options_size);
+        atomicAdd(cnt, options_size);
         return;
     }
 
@@ -49,39 +48,36 @@ void find(int i, int options[], int options_size)
         int intersec_size = 0, vsz = v_size[x] - v_size[x-1];
         for(int i2 = 0; i2 < vsz; i2++)
         {
-            int nd = v[v_size[x-1]+i2];
-            for(int i3=0;i3<options_size;i3++)
+            int nd = v[v_size[x-1] + i2];
+            for(int i3 = 0; i3 < options_size; i3++)
             {
-                if(options[i3]==nd)
+                if(options[i3] == nd)
                     intersec_size++;
             }
-            //if(binary_search(options, options + options_size, nd))
-            //    intersec_size++;
         }
 
         int *intersec = (int*) malloc(intersec_size * sizeof(int));
         for(int i2 = 0, j = 0; i2 < vsz; i2++)
         {
-            int nd = v[v_size[x-1]+i2];
-            for(int i3=0;i3<options_size;i3++)
+            int nd = v[v_size[x-1] + i2];
+            for(int i3 = 0; i3 < options_size; i3++)
             {
-                if(options[i3]==nd)
+                if(options[i3] == nd)
                 {
                     intersec[j] = nd;
                     j++;
                 }
             }
-            //if(binary_search(options, options + options_size, nd))
-            //{
-            //    intersec[j] = nd;
-            //    j++;
-            //}
         }
-
-        // Recursion
-        //cout<<x<<endl;
-        find(i+1, intersec, intersec_size);
+        
+        // Launching kernel inside kernel
+        find<<<1,1>>>(i, intersec, intersec_size, k, v, v_size, cnt);
     }
+}
+
+__global__ void solve(int *i, int *options, int *options_size, int *k, int *v, int *v_size, int *cnt)
+{
+    find<<<1,1>>>((*i), options, (*options_size), (*k), v, v_size, cnt);
 }
 
 // It will store the degree of each node 
@@ -90,11 +86,7 @@ __global__ void degree(int *e1, int *e2, int *d, int *v_size, int m)
     int idx = threadIdx.x+blockDim.x*blockIdx.x;
     if (idx < m)
     {
-        //printf("index = %d\n",idx);
         int x = e1[idx], y = e2[idx];
-        // x is smaller than y
-        //printf("index = %d\tx = %d\ty = %d\n", idx,x,y);
-     
         int *dx = &d[x], *dy = &d[y];
         atomicAdd(dx,1);
         atomicAdd(dy,1);
@@ -105,23 +97,21 @@ __global__ void degree(int *e1, int *e2, int *d, int *v_size, int m)
 
 __global__ void prefix_sum(int *v_size, int n)
 {
-    for(int i=1;i<n;i++)
+    for(int i = 1; i < n; i++)
     {
-        v_size[i]+=v_size[i-1];
+        v_size[i] += v_size[i - 1];
     }
 }
 
 __global__ void adj(int *e1, int *e2, int *v, int *v_i, int *v_size, int m)
 {
-    int idx = threadIdx.x+blockDim.x*blockIdx.x;
+    int idx = threadIdx.x + blockDim.x * blockIdx.x;
     if (idx < m)
     {
-        //printf("index = %d\n",idx);
         int x = e1[idx], y = e2[idx];
         // x is smaller than y
-        int i=atomicAdd(&v_i[x],1);
-        i+=v_size[x-1];
-        //printf("index = %d\n", i);
+        int i = atomicAdd(&v_i[x], 1);
+        i += v_size[x-1];
         assert(i<m);
         v[i]=y;
     }
@@ -152,8 +142,6 @@ int main()
     }
     n++;
     m = mp.size();
-    // v = (int**) malloc(n * sizeof(int*));
-    // v_size = (int*) calloc(n, sizeof(int));
 
     // Storing unique edges in e1[i] - e2[i] 
     int *e1 = (int*) malloc(m * sizeof(int));
@@ -165,11 +153,6 @@ int main()
         e2[i] = x.first.second;
         i++;
     }
-
-    //for(i=0;i<m;i++)
-    //{
-    //    cout<<e1[i]<<" "<<e2[i]<<endl;
-    //}
 
     // edges in device
     int *d_e1, *d_e2;
@@ -196,12 +179,10 @@ int main()
     cudaCheckErrors("cudaMemset degree failure");
 
     int deg_block_sz = 256;
-    //cout<< "kernel config "<<(m+deg_block_sz-1)/deg_block_sz << deg_block_sz<<endl;
     degree<<<(m+deg_block_sz-1)/deg_block_sz, deg_block_sz>>>(d_e1, d_e2, d_d, d_v_size, m);
     cudaCheckErrors("Kernel degree launch failure");
     prefix_sum<<<1,1>>>(d_v_size, n);
     cudaCheckErrors("Kernel prefix_sum launch failure");
-    // cudaDeviceSynchronize();
 
     int d[n];
     v_size = (int*) malloc(n * sizeof(int));
@@ -209,23 +190,6 @@ int main()
     cudaMemcpy(v_size, d_v_size, n*sizeof(int), cudaMemcpyDeviceToHost);
     cudaCheckErrors("cudaMemcpy degree failure");
     
-    //for(int i = 0; i < n; i++)
-    //    cout<<i<<" "<< d[i]<<endl;
-
-    // Finding adjacency list v[] of graph
-    // for(int i = 0; i < n; i++)
-    //     v[i] = (int*)malloc(v_size[i] * sizeof(int));
-
-    // int *v_i = (int*)calloc(n, sizeof(int));
-    // for(auto it: mp)
-    // {
-    //     pair<int,int> p = it.first;
-    //     int x = p.first, y = p.second;
-    //     // x is smaller than y
-    //     v[x][v_i[x]] = y;
-    //     v_i[x]++;
-    // }
-
     int *d_v, *d_v_i;
     cudaMalloc(&d_v, m*sizeof(int));
     cudaMalloc(&d_v_i, n*sizeof(int));
@@ -241,6 +205,12 @@ int main()
     cudaCheckErrors("cudaMemcpy adjacency_matrix failure");
 
 
+    /*
+    I need imp, imp_size, k, i, cnt, v, v_size in gpu memory 
+    d_v_size and d_v are already in gpu memory
+    need to write code for imp, imp_size, k, i and cnt
+    */
+
     // Only those nodes will form k-clique that have degree >= k-1.
     int imp_size = 0;
     for(int i = 0; i < n; i++)
@@ -248,7 +218,6 @@ int main()
         if(d[i] >= k - 1)
             imp_size++;
     }
-
     int *imp = (int*) calloc(imp_size, sizeof(int));
     for(int i = 0, j = 0; i < n; i++)
     {
@@ -258,24 +227,41 @@ int main()
             j++;
         }
     }
- 
-    //for(int i = 0; i < imp_size; i++)
-    //    cout<<i<<" "<< imp[i]<<endl;
-    
-    cnt=0;
-    find(1, imp, imp_size);
+    // cnt=0;
+    // find(1, imp, imp_size);
+
+    int cnt = 0;
+    int *d_imp, *d_imp_size, *d_k, *d_i, *d_cnt;
+    cudaMalloc(&d_imp, imp_size*sizeof(int));
+    cudaMalloc(&d_imp_size, sizeof(int));
+    cudaMalloc(&d_k, sizeof(int));
+    cudaMalloc(&d_i, sizeof(int));
+    cudaMalloc(&d_cnt, sizeof(int));
+    cudaCheckErrors("cudaMalloc failure");
+    cudaMemset(d_i, 0, sizeof(int));
+    cudaMemset(d_cnt, 0, sizeof(int));
+    cudaCheckErrors("cudaMemset failure");
+    cudaMemcpy(d_imp, imp, imp_size*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_imp_size, &imp_size, sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_k, &k, sizeof(int), cudaMemcpyHostToDevice);
+    cudaCheckErrors("cudaMemcpy failure");
+
+    solve<<<1,1>>>(d_i, d_imp, d_imp_size, d_k, d_v, d_v_size, d_cnt);
 
     // End Time
     auto end_time = high_resolution_clock::now();
 //------------------------ ALGORITHM Ends ----------------------------> 
 
 //------------------------ OUTPUT Starts -----------------------------> 
+
+    cudaMemcpy(&cnt, d_cnt, sizeof(int), cudaMemcpyDeviceToHost);
+
     // Calculating time duration.
     auto duration = duration_cast<microseconds> (end_time - start_time);
     float time_us = duration.count();
     float time_ms = (float) duration.count() / 1000;
     float time_s = (float) duration.count() / 1000000;
-
+    
     printf("%d \n", cnt);
     printf("Time Taken -> \n");
     printf("%.3f seconds \n", time_s);
