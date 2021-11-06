@@ -67,43 +67,42 @@ __global__ void adj(int *e1, int *e2, int *v, int *v_i, int *v_size, int m)
 }
 
 
-__global__ void find_iterative(int *d_k, int *G_linear, int *imp, int *d_imp_size, int *cnt)
+__global__ void find_iterative(int *d_k, bool *G_linear, int *imp, int *d_imp_size, int *cnt)
 {
     int k = (*d_k);
     int imp_size = (*d_imp_size);
     int rootIdx = threadIdx.x;
     int root = imp[rootIdx];
     int lvl = 2;
-    bool lvl_vertices[k + 1][imp_size];
-    int num_lvl_vertices[k + 1];
-    int cur_vertex_id[k + 1];
+    bool* lvl_vertices = (bool*)malloc((k + 1) * imp_size * sizeof(bool));
+    int* num_lvl_vertices = (int*)malloc((k + 1) * sizeof(int));
+    int* cur_vertex_id = (int*)malloc((k + 1) * sizeof(int));
 
     // The part of G_linear from root*imp_size to root*imp_size + imp_size - 1;
-    lvl_vertices[lvl] = &(G_linear[root * imp_size]);
+    lvl_vertices[lvl * imp_size] = &(G_linear[root * imp_size]);
    
     cur_vertex_id[lvl] = 0;
     while(cur_vertex_id[lvl] < imp_size)
     {
-        if(lvl_vertices[lvl][cur_vertex_id[lvl]] == 0) 
+        if(lvl_vertices[lvl * imp_size + cur_vertex_id[lvl]] == 0)
         {
             continue;
         }
         
         // vertex = imp[cur_vertex_id[lvl]];
         // vertex's adjacency list is the part of G_linear from vertex_id * imp_size to vertex_id * imp_size + imp_size - 1
-        bool adj_vertex[imp_size];
+        bool* adj_vertex = (bool*)malloc(imp_size * sizeof(bool));
         adj_vertex = &(G_linear[cur_vertex_id[lvl]]);
-        
         
         // intersec of adj_vertex[] with lvl_vertices[lvl][]
         num_lvl_vertices[lvl + 1] = 0;
         for(int idx = 0; idx < imp_size; idx++)
         {
-            lvl_vertices[lvl + 1][idx] = (lvl_vertices[lvl][idx] & adj_vertex[idx]);
-            if(lvl_vertices[lvl + 1][idx] == 1)
+            lvl_vertices[(lvl + 1) * imp_size + idx] = (lvl_vertices[lvl * imp_size + idx] & adj_vertex[idx]);
+            if(lvl_vertices[(lvl + 1) * imp_size + idx] == 1)
             {
                 num_lvl_vertices[lvl + 1]++; 
-            } 
+            }
         }
         
         if(num_lvl_vertices[lvl + 1] > 0 && lvl + 1 < k)
@@ -244,7 +243,7 @@ int main()
     */
 
     int cnt = 0;
-    int *d_imp, *d_imp_size, *d_k, *d_i, *d_cnt;
+    int *d_imp, *d_imp_size, *d_k, *d_cnt;
     cudaMalloc(&d_imp, imp_size*sizeof(int));
     cudaMalloc(&d_imp_size, sizeof(int));
     cudaMalloc(&d_k, sizeof(int));
@@ -287,7 +286,7 @@ int main()
     bool *d_G_linear;
     cudaMalloc(&d_G_linear, imp_size * imp_size * sizeof(bool));
     cudaCheckErrors("cudaMalloc G_linear failure");
-    cudaMemcpy(d_G_linear, G_linear, imp_size * imp_size * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_G_linear, G_linear, imp_size * imp_size * sizeof(bool), cudaMemcpyHostToDevice);
     cudaCheckErrors("cudaMemcpy G_linear failure");
 
     find_iterative<<<1, imp_size>>>(d_k, d_G_linear, d_imp, d_imp_size, d_cnt);
