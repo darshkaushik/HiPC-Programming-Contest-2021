@@ -73,37 +73,59 @@ __global__ void find_iterative(int *d_k, bool *G_linear, int *imp, int *d_imp_si
     int imp_size = (*d_imp_size);
     int rootIdx = threadIdx.x;
     int root = imp[rootIdx];
+    
     int lvl = 2;
-    bool* lvl_vertices = (bool*)malloc((k + 1) * imp_size * sizeof(bool));
+    bool** lvl_vertices = (bool**)malloc((k + 1) * sizeof(bool*));
     int* num_lvl_vertices = (int*)malloc((k + 1) * sizeof(int));
     int* cur_vertex_id = (int*)malloc((k + 1) * sizeof(int));
 
     // The part of G_linear from root*imp_size to root*imp_size + imp_size - 1;
-    lvl_vertices[lvl * imp_size] = &(G_linear[root * imp_size]);
+    lvl_vertices[lvl] = &(G_linear[rootIdx * imp_size]);
+    
+    // printf("inside Kernel, root = %d \n", root);
+    // for(int i = 0; i < imp_size; i++)
+    //     printf("%d ", lvl_vertices[lvl][i]);
+    // printf("\n");
    
     cur_vertex_id[lvl] = 0;
     while(cur_vertex_id[lvl] < imp_size)
     {
-        if(lvl_vertices[lvl * imp_size + cur_vertex_id[lvl]] == 0)
+        // printf("root = %d, lvl = %d, cur_vertex_id = %d \n", root, lvl, cur_vertex_id[lvl]);
+        
+        if(lvl_vertices[lvl][cur_vertex_id[lvl]] == 0)
         {
+            cur_vertex_id[lvl]++;
+            // printf("Continued from cur_vertex_id = %d \n", cur_vertex_id[lvl]);
             continue;
         }
         
         // vertex = imp[cur_vertex_id[lvl]];
         // vertex's adjacency list is the part of G_linear from vertex_id * imp_size to vertex_id * imp_size + imp_size - 1
         bool* adj_vertex = (bool*)malloc(imp_size * sizeof(bool));
-        adj_vertex = &(G_linear[cur_vertex_id[lvl]]);
-        
+        adj_vertex = &(G_linear[cur_vertex_id[lvl] * imp_size]);
+            
+        // printf("Adjacency list \n");
+        // for(int i = 0; i < imp_size; i++)
+        //     printf("%d ", adj_vertex[i]);
+        // printf("\n");
+            
         // intersec of adj_vertex[] with lvl_vertices[lvl][]
+        lvl_vertices[lvl + 1] = (bool*)malloc(imp_size * sizeof(bool));
         num_lvl_vertices[lvl + 1] = 0;
-        for(int idx = 0; idx < imp_size; idx++)
+        for(int i = 0; i < imp_size; i++)
         {
-            lvl_vertices[(lvl + 1) * imp_size + idx] = (lvl_vertices[lvl * imp_size + idx] & adj_vertex[idx]);
-            if(lvl_vertices[(lvl + 1) * imp_size + idx] == 1)
+            lvl_vertices[lvl + 1][i] = (lvl_vertices[lvl][i] & adj_vertex[i]);
+            if(lvl_vertices[lvl + 1][i] == 1)
             {
                 num_lvl_vertices[lvl + 1]++; 
             }
         }
+        
+        // printf("Intersection \n");
+        // for(int i = 0; i < imp_size; i++)
+        //     printf("%d ", lvl_vertices[lvl + 1][i]);
+        // printf("\n");
+        // printf("num_lvl_vertices = %d \n \n", num_lvl_vertices[lvl + 1]);
         
         if(num_lvl_vertices[lvl + 1] > 0 && lvl + 1 < k)
         {
@@ -272,6 +294,15 @@ int main()
         }
     }
 
+    // printf("Printing G \n");
+    // for(int i = 0; i < imp_size; i++)
+    // {
+    //     printf("%d -> ", imp[i]);
+    //     for(int j = 0; j < imp_size; j++)
+    //         printf("%d ", G[i][j]);
+    //     printf("\n");
+    // }
+    
     // making G linear
     bool *G_linear = (bool*)malloc(imp_size * imp_size * sizeof(bool));
     for(int i = 0; i < imp_size; i++)
@@ -281,6 +312,11 @@ int main()
             G_linear[i*imp_size + j] = G[i][j];
         }
     }
+    
+    // printf("Printing G_linear \n");
+    // for(int i = 0; i < imp_size * imp_size; i++)
+    //     printf("%d ", G_linear[i]);
+    // printf("\n \n");
 
     // storing G_linear in gpu
     bool *d_G_linear;
@@ -289,7 +325,7 @@ int main()
     cudaMemcpy(d_G_linear, G_linear, imp_size * imp_size * sizeof(bool), cudaMemcpyHostToDevice);
     cudaCheckErrors("cudaMemcpy G_linear failure");
 
-    find_iterative<<<1, imp_size>>>(d_k, d_G_linear, d_imp, d_imp_size, d_cnt);
+    find_iterative<<<1,imp_size>>>(d_k, d_G_linear, d_imp, d_imp_size, d_cnt);
 
     // End Time
     auto end_time = high_resolution_clock::now();
