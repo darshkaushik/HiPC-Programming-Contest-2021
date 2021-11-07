@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "set": "cpp",
-        "chrono": "cpp",
-        "algorithm": "cpp"
-    }
-}
