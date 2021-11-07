@@ -236,7 +236,7 @@ int main()
     int *cnt = (int*)malloc(imp_size*sizeof(int));
     cudaMemcpy(cnt, d_cnt, imp_size*sizeof(int), cudaMemcpyDeviceToHost);
     long long ans=0;
-    for(int i=0;i<12;i++)
+    for(int i=0;i<imp_size;i++)
     {
         ans+=cnt[i];
     }
