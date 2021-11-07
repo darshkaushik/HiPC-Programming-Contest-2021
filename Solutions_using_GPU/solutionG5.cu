@@ -1,5 +1,4 @@
-%%cu
-// G4
+// G5
 // Finding number of K-Cliques in an undirected graph
 // Find made iterative, one thread per subtree
 
@@ -169,15 +168,15 @@ __global__ void find_iterative(int *d_k, bool *G_linear, int *imp, int *d_imp_si
         }
     }
     
-    thread_count = atomicAdd(cnt, thread_count);
-    printf("\nTotal count = %d\n--------------------------------------\n\n", thread_count);
+    cnt[rootIdx] = thread_count;
+    //printf("\nTotal count = %d\n--------------------------------------\n\n", thread_count);
 }
 
 int main()
 {
     #ifndef ONLINE_JUDGE
-    freopen("./Test_Files/input202.txt", "r", stdin);
-    freopen("G4out.txt", "w", stdout);
+    freopen("./input.txt", "r", stdin);
+    //freopen("output.txt", "w", stdout);
     #endif
 
 //--------------------------- INPUT Starts -----------------------------> 
@@ -297,44 +296,19 @@ int main()
     remaining imp, imp_size, k, i and cnt
     */
 
-    int cnt = 0;
+    int *cnt = (int*)malloc(imp_size*sizeof(int));
     int *d_imp, *d_imp_size, *d_k, *d_cnt;
     cudaMalloc(&d_imp, imp_size*sizeof(int));
     cudaMalloc(&d_imp_size, sizeof(int));
     cudaMalloc(&d_k, sizeof(int));
-    cudaMalloc(&d_cnt, sizeof(int));
+    cudaMalloc(&d_cnt, imp_size*sizeof(int));
     cudaCheckErrors("cudaMalloc failure");
-    cudaMemset(d_cnt, 0, sizeof(int));
+    cudaMemset(d_cnt, 0, imp_size*sizeof(int));
     cudaCheckErrors("cudaMemset failure");
     cudaMemcpy(d_imp, imp, imp_size*sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_imp_size, &imp_size, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_k, &k, sizeof(int), cudaMemcpyHostToDevice);
     cudaCheckErrors("cudaMemcpy failure");
-
-
-    // // Graph is induced based on imp vector
-    // // finding binary coded induced Graph
-    // bool G[imp_size][imp_size];
-    // for(int i = 0; i < imp_size; i++)
-    // {
-    //     int vertex1 = imp[i];
-    //     for(int j = 0; j < imp_size; j++)
-    //     {
-    //         int vertex2 = imp[j];
-    //         // if there is an edge from vertex1 to vertex2 then G[i][j] = 1 else 0
-    //         if(mp.find({vertex1, vertex2}) != mp.end()) G[i][j] = 1;
-    //         else G[i][j] = 0;
-    //     }
-    // }
-
-    // printf("Printing G \n");
-    // for(int i = 0; i < imp_size; i++)
-    // {
-    //     printf("%d -> ", imp[i]);
-    //     for(int j = 0; j < imp_size; j++)
-    //         printf("%d ", G[i][j]);
-    //     printf("\n");
-    // }
     
     // making G linear
     bool *G_linear = (bool*)malloc(imp_size * imp_size * sizeof(bool));
@@ -373,7 +347,14 @@ int main()
 
 //------------------------ OUTPUT Starts -----------------------------> 
 
-    cudaMemcpy(&cnt, d_cnt, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(cnt, d_cnt, imp_size*sizeof(int), cudaMemcpyDeviceToHost);
+    long long ans=0;
+    for(int i=0;i<12;i++)
+    {
+        ans+=cnt[i];
+        cout<<cnt[i]<<"\n";
+    }
+    
 
     // Calculating time duration.
     auto duration = duration_cast<microseconds> (end_time - start_time);
@@ -381,7 +362,7 @@ int main()
     float time_ms = (float) duration.count() / 1000;
     float time_s = (float) duration.count() / 1000000;
     
-    printf("%d \n", cnt);
+    printf("%ld \n", ans);
     printf("Time Taken -> \n");
     printf("%.3f seconds \n", time_s);
     printf("%.3f milliseconds \n", time_ms);
