@@ -15,7 +15,7 @@ It has three solutions: optimised CPU solution, GPU solution 1 and GPU solution 
 
 4. Create a `solution.cu` file and a `input.txt` file. Copy the solution to be executed in the `solution.cu` and the input in the `input.txt`. Make sure that the input format is correct.
 
-5. Excute the `solution.cu` file using the command below. The output will be printed on the command-line screen.
+5. Execute the `solution.cu` file using the command below. The output will be printed on the command-line screen.
 ```
 $nvcc solution.cu 
 $./a.out
@@ -25,7 +25,7 @@ If this doesn't work use:
 $nvcc -arch=sm_35 -rdc=true solution.cu
 $./a.out
 ```
-Here `arch=sm_35` denotes the compute capabilty of the gpu. For compute capability of 6.0 use `sm_60`, similarly for 8.5 use `sm_85`. 
+Here `arch=sm_35` denotes the compute capability of the gpu. For compute capability of 6.0 use `sm_60`, similarly for 8.5 use `sm_85`. 
 
 <hr>
 
@@ -33,7 +33,7 @@ Here `arch=sm_35` denotes the compute capabilty of the gpu. For compute capabili
 
 The first line of input should contain two integers - the first one for the number of edges in the graph and the second one for the value of k for which the number of k-cliques needs to be found.
 
-Next lines contains two integers each which represents an edge.
+Next lines contain two integers each which represents an edge.
 
 <hr>
 

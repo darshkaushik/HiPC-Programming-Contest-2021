@@ -14,8 +14,8 @@
 ## ANALYSIS
 
 Small Input - Description
-- 001 - 
-- 002 - 
+- 001 - 4 clique, k = 3
+- 002 - 4 clique, k = 4
 - 003 - 5 clique, k = 5
 - 004 - 5 clique, k = 4
 - 005 - two disconnected 5 cliques, k = 5
