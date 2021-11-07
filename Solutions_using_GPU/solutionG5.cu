@@ -283,7 +283,7 @@ int main()
         }
     }
     
-    cout<<"Printing important vec of size = "<< imp_size<<endl; 
+    // cout<<"Printing important vec of size = "<< imp_size<<endl; 
     // for(int i=0;i<imp_size;i++)
     // {
     //     cout<<imp[i]<<" ";
@@ -338,7 +338,7 @@ int main()
     cudaCheckErrors("cudaMemcpy G_linear failure");
 
     
-    cout<<"start "<<(imp_size+1023)/1024<<endl;
+    // cout<<"start "<<(imp_size+1023)/1024<<endl;
     find_iterative<<<(imp_size+1023)/1024,1024>>>(d_k, d_G_linear, d_imp, d_imp_size, d_cnt);
 
     // End Time
@@ -352,7 +352,7 @@ int main()
     for(int i=0;i<12;i++)
     {
         ans+=cnt[i];
-        cout<<cnt[i]<<"\n";
+        // cout<<cnt[i]<<"\n";
     }
     
 
