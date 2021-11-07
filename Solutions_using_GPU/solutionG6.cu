@@ -40,32 +40,25 @@ __global__ void degree(int *e1, int *e2, int *d, int m)
     }
 }
 // It will iteratively traverse the subtrees devoting one thread per subtree 
-__global__ void find_iterative(int *d_k, bool *G_linear, int *imp, int *d_imp_size, int *cnt)
+__global__ void find_iterative(int k, bool *G_linear, int imp_size, int *cnt)
 {
     int rootIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
-    int imp_size = (*d_imp_size);
- 
     if (rootIdx>=imp_size)return;
  
-    int k = (*d_k);
-    int root = imp[rootIdx];
     int thread_count=0;
     int lvl = 2;
     bool** lvl_vertices = (bool**)malloc((k + 1) * sizeof(bool*));
     int* num_lvl_vertices = (int*)malloc((k + 1) * sizeof(int));
     int* cur_vertex_id = (int*)malloc((k + 1) * sizeof(int));
 
-    // The part of G_linear from root*imp_size to root*imp_size + imp_size - 1;
+    // The part of G_linear from rootIdx*imp_size to rootIdx*imp_size + imp_size - 1;
     lvl_vertices[lvl] = &(G_linear[rootIdx * imp_size]);
     
     cur_vertex_id[lvl] = 0;
     while(cur_vertex_id[lvl] < imp_size)
     {
-        // printf("root = %d, lvl = %d, cur_vertex_id = %d \n", root, lvl, cur_vertex_id[lvl]);
-        
         if(lvl_vertices[lvl][cur_vertex_id[lvl]] == 0)
         {
-            // printf("Continued from cur_vertex_id = %d \n", cur_vertex_id[lvl]);
             cur_vertex_id[lvl]++;
             while(cur_vertex_id[lvl] == imp_size && lvl > 2)
             {
@@ -207,19 +200,11 @@ int main()
         }
     }
     
-    int *cnt = (int*)malloc(imp_size*sizeof(int));
-    int *d_imp, *d_imp_size, *d_k, *d_cnt;
-    cudaMalloc(&d_imp, imp_size*sizeof(int));
-    cudaMalloc(&d_imp_size, sizeof(int));
-    cudaMalloc(&d_k, sizeof(int));
+    int *d_cnt;
     cudaMalloc(&d_cnt, imp_size*sizeof(int));
     cudaCheckErrors("cudaMalloc failure");
     cudaMemset(d_cnt, 0, imp_size*sizeof(int));
     cudaCheckErrors("cudaMemset failure");
-    cudaMemcpy(d_imp, imp, imp_size*sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_imp_size, &imp_size, sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_k, &k, sizeof(int), cudaMemcpyHostToDevice);
-    cudaCheckErrors("cudaMemcpy failure");
     
     // creating the binary encoding, G_linear
     // each encoding is of constant length imp_size
@@ -241,7 +226,7 @@ int main()
     cudaMemcpy(d_G_linear, G_linear, imp_size * imp_size * sizeof(bool), cudaMemcpyHostToDevice);
     cudaCheckErrors("cudaMemcpy G_linear failure");
 
-    find_iterative<<<(imp_size+1023)/1024,1024>>>(d_k, d_G_linear, d_imp, d_imp_size, d_cnt);
+    find_iterative<<<(imp_size+1023)/1024,1024>>>(k, d_G_linear, imp_size, d_cnt);
 
     // End Time
     auto end_time = high_resolution_clock::now();
@@ -249,6 +234,7 @@ int main()
 
 //------------------------ OUTPUT Starts -----------------------------> 
 
+    int *cnt = (int*)malloc(imp_size*sizeof(int));
     cudaMemcpy(cnt, d_cnt, imp_size*sizeof(int), cudaMemcpyDeviceToHost);
     long long ans=0;
     for(int i=0;i<12;i++)
