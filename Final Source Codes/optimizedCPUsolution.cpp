@@ -81,15 +81,6 @@ int main()
     n++;
     m = mp.size();
 
-    // Storing unique edges in e1[i] - e2[i] 
-    int e1[m], e2[m];
-    int i = 0;
-    for(auto x: mp)
-    {
-        e1[i] = x.first.first;
-        e2[i] = x.first.second;
-        i++;
-    }
 //--------------------------- INPUT Ends -------------------------------> 
 
 //------------------------ ALGORITHM Starts ----------------------------> 
