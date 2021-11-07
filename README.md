@@ -4,6 +4,9 @@
 
 ## Compilation and Execution Instructions
 
+Required gcc version: 8.1 or above <br>
+Required nvcc version: 11.2 or 9.2
+
 Follow these steps to run the solution on a GPU device:
 
 1. Clone or download this Repository. 
