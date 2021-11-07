@@ -110,6 +110,7 @@ __global__ void adj(int *e1, int *e2, int *v, int *v_i, int *v_size, int m)
 
 int main()
 {
+    // Reading input from file named input.txt
     #ifndef ONLINE_JUDGE
     freopen("input.txt", "r", stdin);
     #endif

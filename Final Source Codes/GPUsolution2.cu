@@ -117,8 +117,9 @@ __global__ void find_iterative(int k, bool *G_linear, int imp_size, int *cnt)
 
 int main()
 {
+    // Reading input from file named input.txt
     #ifndef ONLINE_JUDGE
-    freopen("./input.txt", "r", stdin);
+    freopen("input.txt", "r", stdin);
     #endif
 
 //--------------------------- INPUT Starts -----------------------------> 

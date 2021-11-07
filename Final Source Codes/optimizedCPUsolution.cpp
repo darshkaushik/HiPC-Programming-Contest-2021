@@ -63,9 +63,9 @@ void find(int i, int* options, int options_size)
 
 int main()
 {
+    // Reading input from file named input.txt
     #ifndef ONLINE_JUDGE
     freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
     #endif
 
 //--------------------------- INPUT Starts -----------------------------> 
