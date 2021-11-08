@@ -1,5 +1,9 @@
 # [HiPC Programming Contest 2021](https://hipc.org/programming/)
+
 ## Track B: Nvidia GPU Architecture
+<hr>
+
+## Counting k-cliques in a graph using GPUs.
 <hr>
 
 ## Compilation and Execution Instructions
@@ -11,8 +15,7 @@ Follow these steps to run the solution on a GPU device:
 
 1. Clone or download this Repository. 
 
-2. The final source codes are present in the `Final Source Codes` folder. 
-It has three solutions: optimised CPU solution, GPU solution 1 and GPU solution 2.
+2. The final solutions are present in the `Final Source Codes` folder. It has three solutions: optimised CPU solution, GPU solution 1 and GPU solution 2.
 
 3. To run the solutions, create a repository named `test` (it can be named something else as well). Change the working directory to `test`.
 
